@@ -30,6 +30,9 @@ public class TetrisModule : MonoBehaviour {
 	private int activation = 0;
     private List<int> grabBag = new List<int>();
 
+    private bool focused;
+    private KeyCode[] pressableKeys = { KeyCode.A, KeyCode.D, KeyCode.Q, KeyCode.E, KeyCode.W, KeyCode.S, KeyCode.Space };
+
 	void SetMaterial(GameObject go, Material mat)
 	{
 		go.GetComponent<MeshRenderer> ().material = mat;
@@ -114,14 +117,19 @@ public class TetrisModule : MonoBehaviour {
 		NeedyModule.OnNeedyActivation += OnNeedyActivation;
 		NeedyModule.OnNeedyDeactivation += OnNeedyDeactivation;
 		NeedyModule.OnTimerExpired += OnTimerExpired;
+        var selectable = GetComponent<KMSelectable>();
+        selectable.OnSelect += delegate () { focused = true; };
+        selectable.OnDeselect += delegate () { focused = false; };
+        if (Application.isEditor)
+            focused = true;
 
-		/*MoveLeftButton.OnInteract += delegate() { return MoveLeft (); };
+        /*MoveLeftButton.OnInteract += delegate() { return MoveLeft (); };
 		MoveRightButton.OnInteract += delegate() { return MoveRight (); };
 		TurnLeftButton.OnInteract += delegate() { return TurnLeft (); };
 		TurnRightButton.OnInteract += delegate() { return TurnRight (); };
 		DownButton.OnInteract += delegate() { return Down (); };*/
 
-		ObjectGrid = new GameObject[G_WIDTH, G_WIDTH];
+        ObjectGrid = new GameObject[G_WIDTH, G_WIDTH];
 
 		GameBoard = new TetrisBoard (G_WIDTH, G_WIDTH);
 
@@ -285,34 +293,34 @@ public class TetrisModule : MonoBehaviour {
         }
     }
 
-	/*void Update()
+	void Update()
 	{
-		if (tetr != null) {
-			bool moved = false;
-			if (Input.GetKeyDown ("q")) {
-				tetr.MoveLeft ();
-				moved = true;
-			}
-			if (Input.GetKeyDown ("e")) {
-				tetr.MoveRight ();
-				moved = true;
-			}
-			if (Input.GetKeyDown ("a")) {
-				tetr.TurnLeft ();
-				moved = true;
-			}
-			if (Input.GetKeyDown ("d")) {
-				tetr.TurnRight ();
-				moved = true;
-			}
-			if (Input.GetKeyDown ("s")) {
-				ApplyTetromino ();
-				moved = true;
-			}
-
-			if (moved) {
-				UpdateGrid ();
-			}
+		if (focused && tetr != null)
+        {
+            foreach (KeyCode key in pressableKeys)
+            {
+                if (Input.GetKeyDown(key))
+                    switch (key)
+                    {
+                        case KeyCode.A:
+                            MoveLeftButton.OnInteract();
+                            break;
+                        case KeyCode.D:
+                            MoveRightButton.OnInteract();
+                            break;
+                        case KeyCode.W:
+                        case KeyCode.S:
+                        case KeyCode.Space:
+                            DownButton.OnInteract();
+                            break;
+                        case KeyCode.Q:
+                            TurnLeftButton.OnInteract();
+                            break;
+                        case KeyCode.E:
+                            TurnRightButton.OnInteract();
+                            break;
+                    }
+            }
 		}
-	}*/
+	}
 }
